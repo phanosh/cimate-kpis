@@ -58,6 +58,11 @@
             overflow: visible;
             max-width: none;
         }
+        select {
+            width: 100%;
+            padding: 5px;
+            box-sizing: border-box;
+        }
         input[type="text"] {
             width: 100%;
             padding: 5px;
@@ -117,13 +122,13 @@
 </head>
 <body>
     
-    
     <h1>Track What Matters</h1>
-    <p>Climate reports by companies often contain a bunch of feel-good graphics and statements, flowered up to look like progress. Instead, I believe organizations should focus on tracking industry-specific KPIs to understand, and reduce their climate impact. The table below is a non-exhaustive list of climate KPIs I've been collecting.</p>
+    <p>Climate strategies contain a bunch of feel-good graphics and statements, flowered up to look like progress. Instead, I believe organizations should focus on tracking industry-specific KPIs to understand, and reduce their climate impact. The table below is a non-exhaustive list of climate KPIs I've been collecting.</p>
     <br>
     <p>Put together by <a href="https://www.linkedin.com/in/phanosha/" target="_blank">Phanos Hadjikyriakou</a>.</p>
     <br>
     <button id="download">Download Filtered Data</button>
+
     <table id="dataTable" class="display" style="width:100%">
         <thead>
             <tr>
@@ -162,7 +167,11 @@
                     const headers = jsonData[0];
                     const rows = jsonData.slice(1).filter(row => row.some(cell => cell !== undefined && cell !== ''));
 
-                                        // Populate Industry dropdown
+                    // Unique values for the dropdowns
+                    const uniqueIndustries = [...new Set(rows.map(row => row[headers.indexOf('Industry')]).filter(Boolean))];
+                    const uniqueStakeholders = [...new Set(rows.map(row => row[headers.indexOf('Key Stakeholder')]).filter(Boolean))];
+
+                    // Populate Industry dropdown
                     uniqueIndustries.forEach(industry => {
                         $('#industryFilter').append(`<option value="${industry}">${industry}</option>`);
                     });
@@ -171,7 +180,6 @@
                     uniqueStakeholders.forEach(stakeholder => {
                         $('#stakeholderFilter').append(`<option value="${stakeholder}">${stakeholder}</option>`);
                     });
-
 
                     rows.forEach(row => {
                         $('#dataTable tbody').append(`
@@ -196,6 +204,16 @@
                             null,
                             null
                         ]
+                    });
+
+                    // Filter by Industry
+                    $('#industryFilter').on('change', function() {
+                        table.column(0).search(this.value).draw();
+                    });
+
+                    // Filter by Stakeholder
+                    $('#stakeholderFilter').on('change', function() {
+                        table.column(1).search(this.value).draw();
                     });
 
                     // Apply the search
