@@ -45,10 +45,29 @@
             background-color: #f2f2f2;
             font-weight: 500;
         }
+        td.description {
+            cursor: pointer;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 200px; /* Adjust this value to fit your layout */
+        }
+        td.description.expanded {
+            white-space: normal;
+            overflow: visible;
+            max-width: none;
+        }
         input[type="text"] {
             width: 100%;
             padding: 5px;
             box-sizing: border-box;
+        }
+        a:hover {
+            color: #F9E400;
+        }
+        ::selection {
+            background: #F9E400;
+            color: #7C00FE;
         }
         @media (max-width: 600px) {
             body {
@@ -74,7 +93,7 @@
 </head>
 <body>
     <h1>Track What Matters</h1>
-    <p>Cimate strategies contain a bunch of ****, flowered up to look like progress. Instead, I believe organizations should focus on tracking industry-specific KPIs to understand, and reduce their climate impact. The table below is a non exhaustive list of climate KPIs I've been collecting.</p>
+    <p>Cimate strategies contain a bunch of feel-good graphics and statements, flowered up to look like progress. Instead, I believe organizations should focus on tracking industry-specific KPIs to understand, and reduce their climate impact. The table below is a non exhaustive list of climate KPIs I've been collecting.</p>
     <br>
     <p>Put together by <a href="https://www.linkedin.com/in/phanosha/" target="_blank">Phanos Hadjikyriakou</a>.</p>
     <table id="dataTable" class="display" style="width:100%">
@@ -101,6 +120,8 @@
         </tbody>
     </table>
 
+    <button id="download">Download Filtered Data</button>
+
     <script>
         $(document).ready(function() {
             const excelFile = 'ClimateKPIs_V01_PH.xlsx';
@@ -123,7 +144,7 @@
                                 <td>${row[headers.indexOf('Key Impact Tracked')] || ''}</td>
                                 <td>${row[headers.indexOf('Explanation')] || ''}</td>
                                 <td>${row[headers.indexOf('Unit')] || ''}</td>
-                                <td>${row[headers.indexOf('Description')] || ''}</td>
+                                <td class="description">${row[headers.indexOf('Description')] || ''}</td>
                             </tr>
                         `);
                     });
@@ -148,6 +169,20 @@
                                 that.search(this.value).draw();
                             }
                         });
+                    });
+
+                    // Toggle full description on click
+                    $('#dataTable').on('click', 'td.description', function() {
+                        $(this).toggleClass('expanded');
+                    });
+
+                    // Download filtered data as Excel
+                    $('#download').on('click', function() {
+                        const filteredData = table.rows({ filter: 'applied' }).data().toArray();
+                        const ws = XLSX.utils.json_to_sheet(filteredData, { header: headers });
+                        const wb = XLSX.utils.book_new();
+                        XLSX.utils.book_append_sheet(wb, ws, "FilteredData");
+                        XLSX.writeFile(wb, "ClimateKPIs_export.xlsx");
                     });
                 })
                 .catch(error => console.error("Error reading the Excel file: ", error));
