@@ -1,1 +1,82 @@
-<h1>Hello world</h1>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track What Matters</title>
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Include DataTables CSS and JS -->
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css"/>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <!-- Include SheetJS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
+</head>
+<body>
+    <h1>Track What Matters</h1>
+    <p>This table displays data directly from an Excel file stored in the same folder.</p>
+    
+    <table id="dataTable" class="display" style="width:100%">
+        <thead>
+            <tr>
+                <th>Key Stakeholder</th>
+                <th>Key Impact Tracked</th>
+                <th>Industry</th>
+                <th>Explanation</th>
+                <th>Unit</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Placeholder for dynamic data rows -->
+        </tbody>
+    </table>
+
+    <script>
+        $(document).ready(function() {
+            // Path to your Excel file in the same folder as this HTML file
+            const excelFile = 'ClimateKPIs_V01_PH.xlsx';
+
+            // Read the Excel file
+            fetch(excelFile)
+                .then(response => response.arrayBuffer())
+                .then(data => {
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                    // Extract headers and rows
+                    const headers = jsonData[0];
+                    const rows = jsonData.slice(1);
+
+                    // Populate the DataTable
+                    rows.forEach(row => {
+                        $('#dataTable tbody').append(`
+                            <tr>
+                                <td>${row[headers.indexOf('Key Stakeholder')] || ''}</td>
+                                <td>${row[headers.indexOf('Key Impact Tracked')] || ''}</td>
+                                <td>${row[headers.indexOf('Industry')] || ''}</td>
+                                <td>${row[headers.indexOf('Explanation')] || ''}</td>
+                                <td>${row[headers.indexOf('Unit')] || ''}</td>
+                                <td>${row[headers.indexOf('Description')] || ''}</td>
+                            </tr>
+                        `);
+                    });
+
+                    // Initialize DataTable
+                    $('#dataTable').DataTable({
+                        "columns": [
+                            { "name": "Key Stakeholder" },
+                            { "name": "Key Impact Tracked" },
+                            { "name": "Industry" },
+                            null,
+                            null,
+                            null
+                        ]
+                    });
+                })
+                .catch(error => console.error("Error reading the Excel file: ", error));
+        });
+    </script>
+</body>
+</html>
