@@ -4,6 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Track What Matters</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: "Roboto Mono", "BAG Regular", "Inter", sans-serif;
+            color: #333333;
+            background-color: #f8f8f8;
+            text-align: center;
+            padding: 20px;
+            margin: 0;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 2.0em;
+            margin-bottom: 0.5em;
+        }
+        p {
+            font-size: 1.0em;
+            line-height: 1.8;
+            margin: 1em 0;
+        }
+        table {
+            width: 100%;
+            margin: 20px 0;
+            border-collapse: collapse;
+            font-size: 1em;
+        }
+        table.dataTable td:first-child {
+            font-weight: bold;
+        }
+        th, td {
+            text-align: left;
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+            font-weight: 500;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        @media (max-width: 600px) {
+            body {
+                max-width: 90%; /* Adjust body width for mobile */
+                padding: 10px; /* Adjust padding for mobile */
+            }
+            table {
+                font-size: 0.9em; /* Adjust table font size for mobile */
+            }
+            p {
+                font-size: 0.9em; /* Adjust font size for mobile */
+                line-height: 1.5; /* Adjust line height for mobile */
+            }
+        }
+    </style>
     <!-- Include jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Include DataTables CSS and JS -->
@@ -14,17 +74,25 @@
 </head>
 <body>
     <h1>Track What Matters</h1>
-    <p>This table displays data directly from an Excel file stored in the same folder.</p>
-    
+    <p>Cimate strategies contain a bunch of ****, flowered up to look like progress. Instead, I believe organizations should focus on tracking industry-specific KPIs to understand, and reduce their climate impact. The table below is a non exhaustive list of climate KPIs I've been collecting.</p>
+    <p>Put together by <a>href="https://www.linkedin.com/in/phanosha/" target="_blank">Phanos Hadjikyriakou</a>.</p>
     <table id="dataTable" class="display" style="width:100%">
         <thead>
             <tr>
+                <th>Industry</th>
                 <th>Key Stakeholder</th>
                 <th>Key Impact Tracked</th>
-                <th>Industry</th>
                 <th>Explanation</th>
                 <th>Unit</th>
                 <th>Description</th>
+            </tr>
+            <tr>
+                <th><input type="text" placeholder="Search Industry" /></th>
+                <th><input type="text" placeholder="Search Stakeholder" /></th>
+                <th><input type="text" placeholder="Search Impact Tracked" /></th>
+                <th></th>
+                <th></th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
@@ -34,10 +102,8 @@
 
     <script>
         $(document).ready(function() {
-            // Path to your Excel file in the same folder as this HTML file
             const excelFile = 'ClimateKPIs_V01_PH.xlsx';
 
-            // Read the Excel file
             fetch(excelFile)
                 .then(response => response.arrayBuffer())
                 .then(data => {
@@ -45,17 +111,15 @@
                     const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                     const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
 
-                    // Extract headers and rows
                     const headers = jsonData[0];
-                    const rows = jsonData.slice(1);
+                    const rows = jsonData.slice(1).filter(row => row.some(cell => cell !== undefined && cell !== ''));
 
-                    // Populate the DataTable
                     rows.forEach(row => {
                         $('#dataTable tbody').append(`
                             <tr>
+                                <td>${row[headers.indexOf('Industry')] || ''}</td>
                                 <td>${row[headers.indexOf('Key Stakeholder')] || ''}</td>
                                 <td>${row[headers.indexOf('Key Impact Tracked')] || ''}</td>
-                                <td>${row[headers.indexOf('Industry')] || ''}</td>
                                 <td>${row[headers.indexOf('Explanation')] || ''}</td>
                                 <td>${row[headers.indexOf('Unit')] || ''}</td>
                                 <td>${row[headers.indexOf('Description')] || ''}</td>
@@ -63,16 +127,26 @@
                         `);
                     });
 
-                    // Initialize DataTable
-                    $('#dataTable').DataTable({
+                    const table = $('#dataTable').DataTable({
+                        "order": [[0, "asc"]],
                         "columns": [
+                            { "name": "Industry" },
                             { "name": "Key Stakeholder" },
                             { "name": "Key Impact Tracked" },
-                            { "name": "Industry" },
                             null,
                             null,
                             null
                         ]
+                    });
+
+                    // Apply the search
+                    table.columns().every(function() {
+                        var that = this;
+                        $('input', this.header()).on('keyup change', function() {
+                            if (that.search() !== this.value) {
+                                that.search(this.value).draw();
+                            }
+                        });
                     });
                 })
                 .catch(error => console.error("Error reading the Excel file: ", error));
