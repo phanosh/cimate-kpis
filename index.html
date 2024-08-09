@@ -116,13 +116,14 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.0/xlsx.full.min.js"></script>
 </head>
 <body>
-    <button id="download">Download Filtered Data</button>
+    
     
     <h1>Track What Matters</h1>
     <p>Climate reports by companies often contain a bunch of feel-good graphics and statements, flowered up to look like progress. Instead, I believe organizations should focus on tracking industry-specific KPIs to understand, and reduce their climate impact. The table below is a non-exhaustive list of climate KPIs I've been collecting.</p>
     <br>
     <p>Put together by <a href="https://www.linkedin.com/in/phanosha/" target="_blank">Phanos Hadjikyriakou</a>.</p>
-    
+    <br>
+    <button id="download">Download Filtered Data</button>
     <table id="dataTable" class="display" style="width:100%">
         <thead>
             <tr>
@@ -134,8 +135,8 @@
                 <th>Description</th>
             </tr>
             <tr>
-                <th><input type="text" placeholder="Search Industry" /></th>
-                <th><input type="text" placeholder="Search Stakeholder" /></th>
+                <th><select id="industryFilter"><option value="">All Industries</option></select></th>
+                <th><select id="stakeholderFilter"><option value="">All Stakeholders</option></select></th>
                 <th><input type="text" placeholder="Search Impact Tracked" /></th>
                 <th><input type="text" placeholder="Search Unit" /></th>
                 <th></th>
@@ -160,6 +161,17 @@
 
                     const headers = jsonData[0];
                     const rows = jsonData.slice(1).filter(row => row.some(cell => cell !== undefined && cell !== ''));
+
+                                        // Populate Industry dropdown
+                    uniqueIndustries.forEach(industry => {
+                        $('#industryFilter').append(`<option value="${industry}">${industry}</option>`);
+                    });
+
+                    // Populate Stakeholder dropdown
+                    uniqueStakeholders.forEach(stakeholder => {
+                        $('#stakeholderFilter').append(`<option value="${stakeholder}">${stakeholder}</option>`);
+                    });
+
 
                     rows.forEach(row => {
                         $('#dataTable tbody').append(`
