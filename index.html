@@ -62,6 +62,10 @@
             width: 100%;
             padding: 5px;
             box-sizing: border-box;
+            font-family: "Roboto Mono", sans-serif;
+            color: #333333;
+            background-color: #f8f8f8;
+            border: 1px solid #ddd;
         }
         input[type="text"] {
             width: 100%;
@@ -110,6 +114,14 @@
                 right: 0;
                 border-radius: 0;
             }
+        }
+        /* Ensure "Show entries" text is on one line */
+        .dataTables_length {
+            display: inline-block;
+        }
+        /* Remove the overall search bar */
+        .dataTables_filter {
+            display: none;
         }
     </style>
     <!-- Include jQuery -->
@@ -209,14 +221,27 @@
                     // Filter by Industry
                     $('#industryFilter').on('change', function() {
                         table.column(0).search(this.value).draw();
-                    });
+
+                            // Adjust Stakeholder dropdown based on selected industry
+                            const filteredRows = rows.filter(row => row[headers.indexOf('Industry')] === this.value || this.value === '');
+                            const uniqueFilteredStakeholders = [...new Set(filteredRows.map(row => row[headers.indexOf('Key Stakeholder')]).filter(Boolean))];
+
+                            // Clear the current Stakeholder dropdown options and repopulate
+                            $('#stakeholderFilter').empty().append('<option value="">All Stakeholders</option>');
+                            uniqueFilteredStakeholders.forEach(stakeholder => {
+                                $('#stakeholderFilter').append(`<option value="${stakeholder}">${stakeholder}</option>`);
+                            });
+
+                            // Trigger a stakeholder filter update
+                            $('#stakeholderFilter').trigger('change');
+                        });
 
                     // Filter by Stakeholder
                     $('#stakeholderFilter').on('change', function() {
                         table.column(1).search(this.value).draw();
                     });
 
-                    // Apply the search
+                    // Apply the search for text inputs
                     table.columns().every(function() {
                         var that = this;
                         $('input', this.header()).on('keyup change', function() {
